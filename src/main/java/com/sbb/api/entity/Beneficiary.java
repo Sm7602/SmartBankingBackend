@@ -28,8 +28,12 @@ public class Beneficiary {
     private String ifscCode;
 
     private String nickname;
+    
+    private Boolean active;
 
-    private LocalDateTime addedAt;
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
