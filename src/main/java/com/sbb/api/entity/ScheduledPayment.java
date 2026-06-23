@@ -38,6 +38,8 @@ public class ScheduledPayment {
     private Boolean active;
 
     private LocalDateTime createdAt;
+    
+    private LocalDateTime updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
