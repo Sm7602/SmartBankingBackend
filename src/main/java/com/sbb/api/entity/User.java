@@ -3,6 +3,7 @@ package com.sbb.api.entity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -56,8 +57,8 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<ScheduledPayment> scheduledPayments;
     
-    @OneToOne(mappedBy = "user")
-    private Wallet wallet;
+    @OneToOne(mappedBy = "user",cascade = CascadeType.ALL,orphanRemoval = true)
+  private Wallet wallet;
     
   
 }
