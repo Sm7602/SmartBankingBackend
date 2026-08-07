@@ -21,9 +21,9 @@ public class ScheduledPaymentController {
     private ScheduledPaymentService scheduledPaymentService;
 
     @PostMapping("/userId/{userId}")
-    public ScheduledPayment createScheduledPayment(@PathVariable Long userId, @RequestBody ScheduledPayment scheduledPayment) {
+    public ScheduledPayment createScheduledPayment(@PathVariable Long customerId, @RequestBody ScheduledPayment scheduledPayment) {
         System.out.println("ScheduledPaymentController.createScheduledPayment()");
-        return scheduledPaymentService.createScheduledPayment(userId,scheduledPayment);
+        return scheduledPaymentService.createScheduledPayment(customerId,scheduledPayment);
     }
 
     @GetMapping("/{id}")
@@ -33,9 +33,9 @@ public class ScheduledPaymentController {
     }
 
     @GetMapping("/user/{userId}")
-    public List<ScheduledPayment> getScheduledPaymentsByUserId(@PathVariable Long userId) {
+    public List<ScheduledPayment> getScheduledPaymentsByCustomerId(@PathVariable Long customerId) {
         System.out.println("ScheduledPaymentController.getScheduledPaymentsByUserId()");
-        return scheduledPaymentService.getScheduledPaymentsByUserId(userId);
+        return scheduledPaymentService.getScheduledPaymentsByCustomerId(customerId);
     }
 
     @PutMapping("/{id}")

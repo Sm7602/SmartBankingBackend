@@ -18,9 +18,9 @@ public class ScheduledPaymentService {
     @Autowired
     private CustomerRepository customerRepository;
 
-    public ScheduledPayment createScheduledPayment(Long userId,ScheduledPayment scheduledPayment) {
+    public ScheduledPayment createScheduledPayment(Long customerId,ScheduledPayment scheduledPayment) {
         System.out.println("ScheduledPaymentService.createScheduledPayment()");
-        Customer customer = customerRepository.findById(userId).orElseThrow(() ->
+        Customer customer = customerRepository.findById(customerId).orElseThrow(() ->
                         new RuntimeException("Customer not found"));
 
         scheduledPayment.setCustomer(customer);
@@ -37,9 +37,9 @@ public class ScheduledPaymentService {
                         new RuntimeException("Scheduled Payment not found"));
     }
 
-    public List<ScheduledPayment> getScheduledPaymentsByUserId(Long userId) {
+    public List<ScheduledPayment> getScheduledPaymentsByCustomerId(Long customerId) {
         System.out.println("ScheduledPaymentService.getScheduledPaymentsByUserId()");
-        return scheduledPaymentRepository.findByUserId(userId);
+        return scheduledPaymentRepository.findByCustomerId(customerId);
     }
 
     public ScheduledPayment updateScheduledPayment(Long id,ScheduledPayment scheduledPayment) {

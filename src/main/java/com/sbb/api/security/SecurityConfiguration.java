@@ -26,36 +26,11 @@ public class SecurityConfiguration {
 
         .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
-                .requestMatchers( "/api/auth/**","/api/**")
+        		    .requestMatchers("/api/v1/auth/**")
+                .permitAll()
+                .requestMatchers("/error")
                 .permitAll()
                 
-//                .requestMatchers(HttpMethod.POST,"/api/orders/**")
-//                .hasRole("CUSTOMER")
-//
-//                .requestMatchers("/api/v1/cart/**")
-//                .hasRole("CUSTOMER")
-//
-//                .requestMatchers("/api/wishlist/**")
-//                .hasRole("CUSTOMER")
-//
-//                .requestMatchers(HttpMethod.POST,"/api/products/**")
-//                .hasRole("ADMIN")
-//
-//                .requestMatchers(HttpMethod.PUT,"/api/products/**")
-//                .hasRole("ADMIN")
-//
-//                .requestMatchers(HttpMethod.DELETE,"/api/products/**")
-//                .hasRole("ADMIN")
-//
-//                .requestMatchers("/api/categories/**")
-//                .hasRole("ADMIN")
-
-
-//                .requestMatchers(HttpMethod.GET,"/api/products/**")
-//                .authenticated()
-//
-//                .requestMatchers(HttpMethod.GET,"/api/customer/**")
-//                .authenticated()
                 .anyRequest()
                 .authenticated()
 

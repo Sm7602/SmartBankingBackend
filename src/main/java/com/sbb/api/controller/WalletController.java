@@ -21,9 +21,9 @@ public class WalletController {
     private WalletService walletService;
 
     @PostMapping("/{userId}")
-    public Wallet createWallet(@PathVariable Long userId,@RequestBody Wallet wallet) {
+    public Wallet createWallet(@PathVariable Long customerId,@RequestBody Wallet wallet) {
         System.out.println("WalletController.createWallet()");
-        return walletService.createWallet(userId, wallet);
+        return walletService.createWallet(customerId, wallet);
     }
 
     @GetMapping("/{id}")

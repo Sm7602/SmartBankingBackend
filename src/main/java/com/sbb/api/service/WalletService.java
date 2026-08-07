@@ -19,9 +19,9 @@ public class WalletService {
     @Autowired
     private CustomerRepository customerRepository;
 
-    public Wallet createWallet(Long userId, Wallet wallet) {
+    public Wallet createWallet(Long customerId, Wallet wallet) {
         System.out.println("WalletService.createWallet()");
-        Customer customer = customerRepository.findById(userId).orElseThrow(() ->
+        Customer customer = customerRepository.findById(customerId).orElseThrow(() ->
                         new RuntimeException("Customer not found"));
 
         wallet.setCustomer(customer);

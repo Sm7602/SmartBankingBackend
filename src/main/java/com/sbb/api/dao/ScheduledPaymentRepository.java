@@ -7,6 +7,6 @@ import com.sbb.api.entity.ScheduledPayment;
 
 public interface ScheduledPaymentRepository extends JpaRepository<ScheduledPayment,Long> {
 
-	List<ScheduledPayment> findByUserId(Long userId);
+	List<ScheduledPayment> findByCustomerId(Long customerId);
 
 }
