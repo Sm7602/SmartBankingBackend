@@ -3,6 +3,7 @@ package com.sbb.api.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,12 +11,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
 @Data
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
+@Entity
 public class Account {
 
     @Id
@@ -45,8 +50,8 @@ public class Account {
     private LocalDateTime updatedAt;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
     
     @OneToMany(mappedBy = "account")
     private List<Transaction> transactions;

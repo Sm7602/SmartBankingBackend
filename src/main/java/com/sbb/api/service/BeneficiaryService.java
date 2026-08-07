@@ -5,9 +5,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.sbb.api.dao.BeneficiaryRepository;
-import com.sbb.api.dao.UserRepository;
+import com.sbb.api.dao.CustomerRepository;
 import com.sbb.api.entity.Beneficiary;
-import com.sbb.api.entity.User;
+import com.sbb.api.entity.Customer;
 
 @Service
 public class BeneficiaryService {
@@ -16,13 +16,13 @@ public class BeneficiaryService {
     private BeneficiaryRepository beneficiaryRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private CustomerRepository customerRepository;
 
     public Beneficiary createBeneficiary(Long userId,Beneficiary beneficiary) {
         System.out.println("BeneficiaryService.createBeneficiary()");
-        User user = userRepository.findById(userId).orElseThrow(() ->
-                        new RuntimeException("User not found"));
-        beneficiary.setUser(user);
+        Customer customer = customerRepository.findById(userId).orElseThrow(() ->
+                        new RuntimeException("Customer not found"));
+        beneficiary.setCustomer(customer);
         beneficiary.setCreatedAt(LocalDateTime.now());
         beneficiary.setUpdatedAt(LocalDateTime.now());
         return beneficiaryRepository.save(beneficiary);

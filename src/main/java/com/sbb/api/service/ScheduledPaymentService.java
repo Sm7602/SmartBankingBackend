@@ -5,9 +5,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.sbb.api.dao.ScheduledPaymentRepository;
-import com.sbb.api.dao.UserRepository;
+import com.sbb.api.dao.CustomerRepository;
 import com.sbb.api.entity.ScheduledPayment;
-import com.sbb.api.entity.User;
+import com.sbb.api.entity.Customer;
 
 @Service
 public class ScheduledPaymentService {
@@ -16,14 +16,14 @@ public class ScheduledPaymentService {
     private ScheduledPaymentRepository scheduledPaymentRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private CustomerRepository customerRepository;
 
     public ScheduledPayment createScheduledPayment(Long userId,ScheduledPayment scheduledPayment) {
         System.out.println("ScheduledPaymentService.createScheduledPayment()");
-        User user = userRepository.findById(userId).orElseThrow(() ->
-                        new RuntimeException("User not found"));
+        Customer customer = customerRepository.findById(userId).orElseThrow(() ->
+                        new RuntimeException("Customer not found"));
 
-        scheduledPayment.setUser(user);
+        scheduledPayment.setCustomer(customer);
         scheduledPayment.setPaymentReference("SP" + System.currentTimeMillis());
         scheduledPayment.setCreatedAt(LocalDateTime.now());
         scheduledPayment.setUpdatedAt(LocalDateTime.now());

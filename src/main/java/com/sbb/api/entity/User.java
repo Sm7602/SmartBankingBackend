@@ -1,64 +1,80 @@
 package com.sbb.api.entity;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
-import jakarta.persistence.CascadeType;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
+
 @Data
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
-public class User {
+@Entity
+@Table(name = "users")
+public class User implements UserDetails {
+	 @Id
+	 @GeneratedValue(strategy = GenerationType.IDENTITY)
+	 private Long id;
+     
+	 private String firstname;
+	 
+	 private String lastname;
+	 
+	 private String password;
+     
+     private String email;
+     
+     @Enumerated(EnumType.STRING)
+     private Role role;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+     @Override
+     public Collection<? extends GrantedAuthority> getAuthorities() {
+         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+     }
 
-    private String firstName;
+     
+     public String getUsername() {
+         return email;
+     }
 
-    private String lastName;
-
-    private String email;
-
-    private String phoneNumber;
-
-    private String address;
-
-    private String city;
-
-    private String state;
-
-    private String pincode;
-
-    private String customerId;
-
-    private LocalDate dateOfBirth;
     
-    private Boolean active;
+     @Override
+     public boolean isAccountNonExpired() {
+         return true;
+     }
 
-    private LocalDateTime createdAt;
+     @Override
+     public boolean isAccountNonLocked() {
+         return true;
+     }
 
-    private LocalDateTime updatedAt;
-    
-    @OneToMany(mappedBy = "user")
-    private List<Account> accounts;
-    
-    @OneToMany(mappedBy = "user")
-    private List<Beneficiary> beneficiaries;
-    
-    @OneToMany(mappedBy = "user")
-    private List<ScheduledPayment> scheduledPayments;
-    
-    @OneToOne(mappedBy = "user",cascade = CascadeType.ALL,orphanRemoval = true)
-  private Wallet wallet;
-    
-  
+     @Override
+     public boolean isCredentialsNonExpired() {
+         return true;
+     }
+
+     @Override
+     public boolean isEnabled() {
+         return true;
+     }
+
+
+	 @Override
+	 public String getPassword() {
+		return password;
+	 }
+	 
 }

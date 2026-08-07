@@ -1,13 +1,10 @@
 package com.sbb.api.entity;
-
 import java.time.LocalDateTime;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,31 +16,23 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class Beneficiary {
+public class Admin {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+	
+	private LocalDateTime createdAt;
 
-    private String beneficiaryName;
+	private LocalDateTime updatedAt;
 
-    private String accountNumber;
+	private Boolean active;
 
-    private String bankName;
+    private String firstName;
 
-    private String ifscCode;
+    private String lastName;
 
-    private String nickname;
-    
-    private Boolean active;
-
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
-
-    @ManyToOne
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
+    private String phoneNumber;
     
     @OneToOne
     @JoinColumn(name="user_id")

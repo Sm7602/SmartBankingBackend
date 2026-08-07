@@ -6,9 +6,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.sbb.api.dao.AccountRepository;
-import com.sbb.api.dao.UserRepository;
+import com.sbb.api.dao.CustomerRepository;
 import com.sbb.api.entity.Account;
-import com.sbb.api.entity.User;
+import com.sbb.api.entity.Customer;
 
 @Service
 public class AccountService {
@@ -17,14 +17,14 @@ public class AccountService {
     private AccountRepository accountRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private CustomerRepository customerRepository;
 
     public Account createAccount(Long userId, Account account) {
         System.out.println("AccountService.createAccount()");
-        User user = userRepository.findById(userId).orElseThrow(() ->
-                        new RuntimeException("User not found"));
+        Customer customer = customerRepository.findById(userId).orElseThrow(() ->
+                        new RuntimeException("Customer not found"));
 
-        account.setUser(user);
+        account.setCustomer(customer);
         account.setOpenedAt(LocalDateTime.now());
         account.setUpdatedAt(LocalDateTime.now());
         return accountRepository.save(account);

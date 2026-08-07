@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.sbb.api.dao.UserRepository;
+import com.sbb.api.dao.CustomerRepository;
 import com.sbb.api.dao.WalletRepository;
-import com.sbb.api.entity.User;
+import com.sbb.api.entity.Customer;
 import com.sbb.api.entity.Wallet;
 import jakarta.transaction.Transactional;
 
@@ -17,14 +17,14 @@ public class WalletService {
     private WalletRepository walletRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private CustomerRepository customerRepository;
 
     public Wallet createWallet(Long userId, Wallet wallet) {
         System.out.println("WalletService.createWallet()");
-        User user = userRepository.findById(userId).orElseThrow(() ->
-                        new RuntimeException("User not found"));
+        Customer customer = customerRepository.findById(userId).orElseThrow(() ->
+                        new RuntimeException("Customer not found"));
 
-        wallet.setUser(user);
+        wallet.setCustomer(customer);
         wallet.setWalletNumber("WAL" + System.currentTimeMillis());
         wallet.setWalletBalance(BigDecimal.ZERO);
         wallet.setCreatedAt(LocalDateTime.now());
@@ -125,12 +125,12 @@ public class WalletService {
     public void deleteWallet(Long id) {
         System.out.println("WalletService.deleteWallet()");
         Wallet wallet = getWalletById(id);
-        User user = wallet.getUser();
-        if(user != null) {
-            user.setWallet(null);
-            userRepository.save(user);
+        Customer customer = wallet.getCustomer();
+        if(customer != null) {
+            customer.setWallet(null);
+            customerRepository.save(customer);
         }
-        wallet.setUser(null);
+        wallet.setCustomer(null);
         walletRepository.delete(wallet);
     }
 }
