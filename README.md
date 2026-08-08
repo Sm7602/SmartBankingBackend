@@ -803,15 +803,13 @@ The architecture, entity modelling, and validation show solid fundamentals. The 
 
 ---
 
-## Author
+## 👨‍💻 Author
 
-**\<Your Name\>**
+**Souvik Maity** — Java / Spring Boot Backend Developer
 
-- GitHub: [@\<your-username\>](https://github.com/<your-username>)
-- LinkedIn: [\<your-profile\>](https://linkedin.com/in/<your-profile>)
-- Email: \<your-email\>
-
----
+[![GitHub](https://img.shields.io/badge/GitHub-sm7602-181717?style=for-the-badge&logo=github)](https://github.com/sm7602)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077B5?style=for-the-badge&logo=linkedin)](https://linkedin.com/in/souvik-maity-2a6759333)
+[![Email](https://img.shields.io/badge/Email-Contact-D14836?style=for-the-badge&logo=gmail)](mailto:sm2496444l@gmail.com)
 
 ## License
 
