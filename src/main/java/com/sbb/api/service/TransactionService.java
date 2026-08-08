@@ -1,6 +1,7 @@
 package com.sbb.api.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -93,7 +94,14 @@ public class TransactionService {
             throw new RuntimeException("Insufficient balance");
         }
         
-        BigDecimal dailyWithdraw = transactionRepository.getTodayWithdrawAmount(account.getId());
+        LocalDate today = LocalDate.now();
+
+        LocalDateTime startOfDay =today.atStartOfDay();
+
+        LocalDateTime endOfDay =today.plusDays(1).atStartOfDay();
+
+        
+        BigDecimal dailyWithdraw = transactionRepository.getTodayWithdrawAmount(account.getId(),startOfDay,endOfDay);
 
         if (dailyWithdraw == null) {
         	dailyWithdraw = BigDecimal.ZERO;
@@ -178,7 +186,13 @@ public class TransactionService {
             throw new RuntimeException("Insufficient balance");
         }
         
-        BigDecimal dailyTransferred = transactionRepository.getTodayTransferAmount(sender.getId());
+        LocalDate today = LocalDate.now();
+
+        LocalDateTime startOfDay =today.atStartOfDay();
+
+        LocalDateTime endOfDay =today.plusDays(1).atStartOfDay();
+        
+        BigDecimal dailyTransferred = transactionRepository.getTodayTransferAmount(sender.getId(),startOfDay,endOfDay);
 
         if (dailyTransferred == null) {
             dailyTransferred = BigDecimal.ZERO;
@@ -238,7 +252,7 @@ public class TransactionService {
 
     public List<TransactionResponse> getTransactionsByAccount(String accountNumber) {
         System.out.println("TransactionService.getTransactionsByAccount()");
-        return transactionRepository.findByAccountAccountNumber(accountNumber)
+        return transactionRepository.findByAccount_AccountNumber(accountNumber)
         		    .stream()
 	            .map(this::convertToResponse)
 	            .toList();

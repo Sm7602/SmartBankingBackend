@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -13,6 +14,8 @@ import com.sbb.api.dto.transaction.TransactionRequest;
 import com.sbb.api.dto.transaction.TransactionResponse;
 import com.sbb.api.dto.transaction.TransferRequest;
 import com.sbb.api.service.TransactionService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/transactions")
@@ -22,19 +25,19 @@ public class TransactionController {
     private TransactionService transactionService;
 
     @PostMapping("/deposit")
-    public TransactionResponse deposit(TransactionRequest request)  {
+    public TransactionResponse deposit(@Valid @RequestBody TransactionRequest request)  {
         System.out.println("TransactionController.deposit()");
         return transactionService.deposit(request);
     }
 
     @PostMapping("/withdraw")
-    public TransactionResponse withdraw(TransactionRequest request) {
+    public TransactionResponse withdraw(@Valid @RequestBody TransactionRequest request) {
         System.out.println("TransactionController.withdraw()");
         return transactionService.withdraw(request);
     }
 
     @PostMapping("/transfer")
-    public TransactionResponse transfer(TransferRequest request) {
+    public TransactionResponse transfer(@Valid @RequestBody TransferRequest request) {
         System.out.println("TransactionController.transfer()");
         return transactionService.transfer(request);
     }

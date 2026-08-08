@@ -42,4 +42,8 @@ public class Transaction {
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;
+    
+    @ManyToOne
+    @JoinColumn(name = "wallet_id")
+    private Wallet wallet;
 }

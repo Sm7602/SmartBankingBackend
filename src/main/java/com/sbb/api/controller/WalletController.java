@@ -1,6 +1,5 @@
 package com.sbb.api.controller;
 
-import java.math.BigDecimal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,10 +7,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.sbb.api.entity.Wallet;
+import com.sbb.api.dto.wallet.TransectionRequest;
+import com.sbb.api.dto.wallet.TransferRequest;
+import com.sbb.api.dto.wallet.WalletRequest;
+import com.sbb.api.dto.wallet.WalletResponse;
 import com.sbb.api.service.WalletService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/wallets")
@@ -20,34 +23,34 @@ public class WalletController {
     @Autowired
     private WalletService walletService;
 
-    @PostMapping("/{userId}")
-    public Wallet createWallet(@PathVariable Long customerId,@RequestBody Wallet wallet) {
+    @PostMapping
+    public WalletResponse createWallet(@Valid @RequestBody WalletRequest request) {
         System.out.println("WalletController.createWallet()");
-        return walletService.createWallet(customerId, wallet);
+        return walletService.createWallet(request);
     }
 
     @GetMapping("/{id}")
-    public Wallet getWalletById(@PathVariable Long id) {
+    public WalletResponse getWalletById(@PathVariable Long id) {
         System.out.println("WalletController.getWalletById()");
         return walletService.getWalletById(id);
     }
 
-    @PostMapping("/{id}/add-money")
-    public Wallet addMoney(@PathVariable Long id, @RequestParam BigDecimal amount) {
+    @PostMapping("/add-money")
+    public WalletResponse addMoney(@Valid @RequestBody TransectionRequest request)  {
         System.out.println("WalletController.addMoney()");
-        return walletService.addMoney(id, amount);
+        return walletService.addMoney(request);
     }
 
-    @PostMapping("/{id}/withdraw")
-    public Wallet withdrawMoney(@PathVariable Long id,@RequestParam BigDecimal amount) {
+    @PostMapping("/withdraw")
+    public WalletResponse withdrawMoney(@Valid @RequestBody TransectionRequest request) {
         System.out.println("WalletController.withdrawMoney()");
-        return walletService.withdrawMoney(id, amount);
+        return walletService.withdrawMoney(request);
     }
 
-    @PostMapping("/{id}/transfer")
-    public Wallet transferMoney(@PathVariable Long id,@RequestParam Long receiverWalletId,@RequestParam BigDecimal amount) {
+    @PostMapping("/transfer")
+    public WalletResponse transferMoney(@Valid @RequestBody TransferRequest request) {
         System.out.println("WalletController.transferMoney()");
-        return walletService.transferMoney(id,receiverWalletId,amount);
+        return walletService.transferMoney(request);
     }
 
     @DeleteMapping("/{id}")

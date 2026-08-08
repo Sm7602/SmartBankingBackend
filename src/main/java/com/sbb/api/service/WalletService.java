@@ -1,14 +1,18 @@
 package com.sbb.api.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.sbb.api.dao.CustomerRepository;
 import com.sbb.api.dao.WalletRepository;
+import com.sbb.api.dto.wallet.TransectionRequest;
+import com.sbb.api.dto.wallet.TransferRequest;
+import com.sbb.api.dto.wallet.WalletRequest;
+import com.sbb.api.dto.wallet.WalletResponse;
 import com.sbb.api.entity.Customer;
 import com.sbb.api.entity.Wallet;
-import jakarta.transaction.Transactional;
 
 @Service
 public class WalletService {
@@ -18,76 +22,121 @@ public class WalletService {
 
     @Autowired
     private CustomerRepository customerRepository;
+    
+    private WalletResponse convertToResponse(Wallet wallet) {
 
-    public Wallet createWallet(Long customerId, Wallet wallet) {
+        return WalletResponse.builder()
+                .id(wallet.getId())
+                .walletNumber(wallet.getWalletNumber())
+                .walletBalance(wallet.getWalletBalance())
+                .dailyLimit(wallet.getDailyLimit())
+                .active(wallet.getActive())
+                .createdAt(wallet.getCreatedAt())
+                .updatedAt(wallet.getUpdatedAt())
+                .customer(wallet.getCustomer())
+                .build();
+    }
+
+    public WalletResponse createWallet(WalletRequest request) {
         System.out.println("WalletService.createWallet()");
-        Customer customer = customerRepository.findById(customerId).orElseThrow(() ->
+        Customer customer = customerRepository.findById(request.getCustomerId()).orElseThrow(() ->
                         new RuntimeException("Customer not found"));
+        
+        Wallet wallet=Wallet.builder()
+        		    .walletNumber("WAL" + System.currentTimeMillis())
+                .walletBalance(BigDecimal.ZERO)
+                .dailyLimit(request.getDailyLimit())
+                .active(true)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .customer(customer)
+                .build();
 
-        wallet.setCustomer(customer);
-        wallet.setWalletNumber("WAL" + System.currentTimeMillis());
-        wallet.setWalletBalance(BigDecimal.ZERO);
-        wallet.setCreatedAt(LocalDateTime.now());
-        wallet.setUpdatedAt(LocalDateTime.now());
-
-        return walletRepository.save(wallet);
+        wallet= walletRepository.save(wallet);
+        return convertToResponse(wallet);
     }
 
-    public Wallet getWalletById(Long id) {
+    public WalletResponse getWalletById(Long id) {
         System.out.println("WalletService.getWalletById()");
-        return walletRepository.findById(id).orElseThrow(() ->
+        Wallet wallet= walletRepository.findById(id).orElseThrow(() ->
                         new RuntimeException("Wallet not found"));
+        
+        return convertToResponse(wallet);
     }
 
-    public Wallet addMoney(Long walletId,BigDecimal amount) {
+    public WalletResponse addMoney(TransectionRequest request) {
         System.out.println("WalletService.addMoney()");
-        Wallet wallet = getWalletById(walletId);
+        Wallet wallet = walletRepository.findById(request.getWalletId()).orElseThrow(() ->
+        new RuntimeException("Wallet not found"));
 
         if(!wallet.getActive()) {
             throw new RuntimeException("Wallet is inactive");
         }
         
-        if(amount.compareTo(BigDecimal.ZERO) <= 0) {
+        if(request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new RuntimeException("Invalid amount");
         }
 
-        wallet.setWalletBalance(wallet.getWalletBalance().add(amount));
+        wallet.setWalletBalance(wallet.getWalletBalance().add(request.getAmount()));
         wallet.setUpdatedAt(LocalDateTime.now());
 
-        return walletRepository.save(wallet);
+        wallet= walletRepository.save(wallet);
+        return convertToResponse(wallet);
     }
 
-    public Wallet withdrawMoney(Long walletId,BigDecimal amount) {
+    public WalletResponse withdrawMoney(TransectionRequest request) {
         System.out.println("WalletService.withdrawMoney()");
-        Wallet wallet = getWalletById(walletId);
+        Wallet wallet = walletRepository.findById(request.getWalletId()).orElseThrow(() ->
+        new RuntimeException("Wallet not found"));
 
         if(!wallet.getActive()) {
             throw new RuntimeException("Wallet is inactive");
         }
         
-        if(amount.compareTo(BigDecimal.ZERO) <= 0) {
+        if(request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new RuntimeException("Invalid amount");
         }
 
-        if(wallet.getWalletBalance().compareTo(amount) < 0) {
+        if(wallet.getWalletBalance().compareTo(request.getAmount()) < 0) {
             throw new RuntimeException("Insufficient wallet balance");
         }
         
-        if(amount.compareTo(wallet.getDailyLimit()) > 0) {
-            throw new RuntimeException("Transfer limit exceeded");
+        LocalDate today = LocalDate.now();
+
+        LocalDateTime startOfDay =today.atStartOfDay();
+
+        LocalDateTime endOfDay =today.plusDays(1).atStartOfDay();
+        
+        BigDecimal dailyTransferred = walletRepository.getTodayTransferAmount(wallet.getId(),startOfDay,endOfDay);
+
+        if (dailyTransferred == null) {
+            dailyTransferred = BigDecimal.ZERO;
         }
 
-        wallet.setWalletBalance(wallet.getWalletBalance().subtract(amount));
+        BigDecimal dailyLimit =wallet.getDailyLimit();
+
+        if (dailyLimit != null &&
+                dailyTransferred.add(request.getAmount()).compareTo(dailyLimit) > 0) {
+
+            throw new RuntimeException("Daily transfer limit exceeded");
+        }
+        
+
+        wallet.setWalletBalance(wallet.getWalletBalance().subtract(request.getAmount()));
         wallet.setUpdatedAt(LocalDateTime.now());
 
-        return walletRepository.save(wallet);
+        wallet= walletRepository.save(wallet);
+        return convertToResponse(wallet);
     }
 
-    @Transactional
-    public Wallet transferMoney(Long senderWalletId,Long receiverWalletId,BigDecimal amount) {
+    public WalletResponse transferMoney(TransferRequest request) {
         System.out.println("WalletService.transferMoney()");
-        Wallet sender =getWalletById(senderWalletId);
-        Wallet receiver =getWalletById(receiverWalletId);
+        
+        Wallet sender =walletRepository.findById(request.getSenderwalletId()) .orElseThrow(() ->
+        new RuntimeException("Sender account not found"));
+        
+        Wallet receiver =walletRepository.findById(request.getReciverwalletId()) .orElseThrow(() ->
+        new RuntimeException("Sender account not found"));
         
         if(!sender.getActive()) {
             throw new RuntimeException("Sender account inactive");
@@ -97,34 +146,51 @@ public class WalletService {
             throw new RuntimeException("Receiver account inactive");
         }
         
-        if(senderWalletId.equals(receiverWalletId)) {
+        if(request.getSenderwalletId().equals(request.getReciverwalletId())) {
             throw new RuntimeException("Cannot transfer to same account");
         }
         
-        if(amount.compareTo(BigDecimal.ZERO) <= 0) {
+        if(request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new RuntimeException("Invalid amount");
         }
         
-        if(sender.getWalletBalance().compareTo(amount) < 0) {
+        if(sender.getWalletBalance().compareTo(request.getAmount()) < 0) {
             throw new RuntimeException("Insufficient balance");
         }
         
-        if(amount.compareTo(sender.getDailyLimit()) > 0) {
-            throw new RuntimeException("Transfer limit exceeded");
+        LocalDate today = LocalDate.now();
+
+        LocalDateTime startOfDay =today.atStartOfDay();
+
+        LocalDateTime endOfDay =today.plusDays(1).atStartOfDay();
+        
+        BigDecimal dailyTransferred = walletRepository.getTodayTransferAmount(sender.getId(),startOfDay,endOfDay);
+
+        if (dailyTransferred == null) {
+            dailyTransferred = BigDecimal.ZERO;
         }
 
-        sender.setWalletBalance(sender.getWalletBalance().subtract(amount));
-        receiver.setWalletBalance(receiver.getWalletBalance().add(amount));
+        BigDecimal dailyLimit =sender.getDailyLimit();
+
+        if (dailyLimit != null &&
+                dailyTransferred.add(request.getAmount()).compareTo(dailyLimit) > 0) {
+
+            throw new RuntimeException("Daily transfer limit exceeded");
+        }
+
+        sender.setWalletBalance(sender.getWalletBalance().subtract(request.getAmount()));
+        receiver.setWalletBalance(receiver.getWalletBalance().add(request.getAmount()));
 
         walletRepository.save(sender);
         walletRepository.save(receiver);
 
-        return sender;
+        return convertToResponse(sender);
     }
 
     public void deleteWallet(Long id) {
         System.out.println("WalletService.deleteWallet()");
-        Wallet wallet = getWalletById(id);
+        Wallet wallet = walletRepository.findById(id).orElseThrow(() ->
+        new RuntimeException("Wallet not found"));
         Customer customer = wallet.getCustomer();
         if(customer != null) {
             customer.setWallet(null);
