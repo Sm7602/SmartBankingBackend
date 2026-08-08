@@ -10,8 +10,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.sbb.api.entity.Beneficiary;
+import com.sbb.api.dto.beneficiary.BeneficiaryRequest;
+import com.sbb.api.dto.beneficiary.BeneficiaryResponse;
+import com.sbb.api.dto.beneficiary.BeneficiaryUpdateRequest;
 import com.sbb.api.service.BeneficiaryService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/beneficiaries")
@@ -20,28 +24,28 @@ public class BeneficiaryController {
     @Autowired
     private BeneficiaryService beneficiaryService;
 
-    @PostMapping("/{userId}")
-    public Beneficiary createBeneficiary(@PathVariable Long userId,@RequestBody Beneficiary beneficiary) {
+    @PostMapping
+    public BeneficiaryResponse createBeneficiary(@Valid @RequestBody BeneficiaryRequest request) {
         System.out.println("BeneficiaryController.createBeneficiary()");
-        return beneficiaryService.createBeneficiary(userId, beneficiary);
+        return beneficiaryService.createBeneficiary(request);
     }
 
     @GetMapping("/{id}")
-    public Beneficiary getBeneficiaryById(@PathVariable Long id) {
+    public BeneficiaryResponse getBeneficiaryById(@PathVariable Long id) {
         System.out.println("BeneficiaryController.getBeneficiaryById()");
         return beneficiaryService.getBeneficiaryById(id);
     }
 
     @GetMapping("/user/{userId}")
-    public List<Beneficiary> getBeneficiariesByUserId(@PathVariable Long userId) {
+    public List<BeneficiaryResponse> getBeneficiariesByCustomerId(@PathVariable Long customerId) {
         System.out.println("BeneficiaryController.getBeneficiariesByUserId()");
-        return beneficiaryService.getBeneficiariesByUserId(userId);
+        return beneficiaryService.getBeneficiariesByCustomerId(customerId);
     }
 
     @PutMapping("/{id}")
-    public Beneficiary updateBeneficiary(@PathVariable Long id,@RequestBody Beneficiary beneficiary) {
+    public BeneficiaryResponse updateBeneficiary(@PathVariable Long id,@Valid @RequestBody BeneficiaryUpdateRequest request) {
         System.out.println("BeneficiaryController.updateBeneficiary()");
-        return beneficiaryService.updateBeneficiary(id, beneficiary);
+        return beneficiaryService.updateBeneficiary(id, request);
     }
 
     @DeleteMapping("/{id}")

@@ -11,8 +11,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.sbb.api.entity.Account;
+
+import com.sbb.api.dto.account.AccountRequest;
+import com.sbb.api.dto.account.AccountResponse;
+import com.sbb.api.dto.account.AccountUpdateRequest;
 import com.sbb.api.service.AccountService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -21,28 +26,28 @@ public class AccountController {
     @Autowired
     private AccountService accountService;
 
-    @PostMapping("/userId/{userId}")
-    public Account createAccount(@PathVariable Long userId,@RequestBody Account account) {
+    @PostMapping
+    public AccountResponse createAccount( @Valid @RequestBody AccountRequest request){
         System.out.println("AccountController.createAccount()");
-        return accountService.createAccount(userId, account);
+        return accountService.createAccount(request);
     }
 
     @GetMapping("/{id}")
-    public Account getAccountById(@PathVariable Long id) {
+    public AccountResponse getAccountById(@PathVariable Long id) {
         System.out.println("AccountController.getAccountById()");
         return accountService.getAccountById(id);
     }
 
     @GetMapping
-    public List<Account> getAllAccounts() {
+    public List<AccountResponse> getAllAccounts() {
         System.out.println("AccountController.getAllAccounts()");
         return accountService.getAllAccounts();
     }
 
     @PutMapping("/{id}")
-    public Account updateAccount(@PathVariable Long id,@RequestBody Account account) {
+    public AccountResponse updateAccount(Long id, @Valid @RequestBody AccountUpdateRequest request){
         System.out.println("AccountController.updateAccount()");
-        return accountService.updateAccount(id, account);
+        return accountService.updateAccount(id, request);
     }
 
     @DeleteMapping("/{id}")
@@ -53,7 +58,7 @@ public class AccountController {
     }
 
     @GetMapping("/number/{accountNumber}")
-    public Account getAccountByNumber(@PathVariable String accountNumber) {
+    public AccountResponse getAccountByNumber(@PathVariable String accountNumber) {
         System.out.println("AccountController.getAccountByNumber()");
         return accountService.getAccountByNumber(accountNumber);
     }
@@ -65,13 +70,13 @@ public class AccountController {
     }
 
     @PutMapping("/{id}/activate")
-    public Account activateAccount(@PathVariable Long id) {
+    public AccountResponse activateAccount(@PathVariable Long id) {
         System.out.println("AccountController.activateAccount()");
         return accountService.activateAccount(id);
     }
 
     @PutMapping("/{id}/deactivate")
-    public Account deactivateAccount(@PathVariable Long id) {
+    public AccountResponse deactivateAccount(@PathVariable Long id) {
         System.out.println("AccountController.deactivateAccount()");
         return accountService.deactivateAccount(id);
     }
