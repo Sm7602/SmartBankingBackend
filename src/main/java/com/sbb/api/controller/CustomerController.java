@@ -10,8 +10,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.sbb.api.entity.Customer;
+
+import com.sbb.api.dto.customer.CustomerRequest;
+import com.sbb.api.dto.customer.CustomerResponse;
+import com.sbb.api.dto.customer.CustomerUpdateRequest;
 import com.sbb.api.service.CustomerService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/users")
@@ -21,33 +26,33 @@ public class CustomerController {
     private CustomerService customerService;
 
     @PostMapping
-    public Customer createUser(@RequestBody Customer customer) {
-        System.out.println("CustomerController.createUser()");
-        return customerService.createUser(customer);
+    public CustomerResponse createCustomer(@Valid @RequestBody CustomerRequest request) {
+        System.out.println("CustomerController.createCustomer()");
+        return customerService.createCustomer(request);
     }
 
     @GetMapping("/{id}")
-    public Customer getUserById(@PathVariable Long id) {
-        System.out.println("CustomerController.getUserById()");
-        return customerService.getUserById(id);
+    public CustomerResponse getCustomerById(@PathVariable Long id) {
+        System.out.println("CustomerController.getCustomerById()");
+        return customerService.getCustomerById(id);
     }
 
     @GetMapping
-    public List<Customer> getAllUsers() {
-        System.out.println("CustomerController.getAllUsers()");
-        return customerService.getAllUsers();
+    public List<CustomerResponse> getAllCustomers() {
+        System.out.println("CustomerController.getAllCustomers()");
+        return customerService.getAllCustomers();
     }
 
     @PutMapping("/{id}")
-    public Customer updateUser(@PathVariable Long id,@RequestBody Customer customer) {
-        System.out.println("CustomerController.updateUser()");
-        return customerService.updateUser(id, customer);
+    public CustomerResponse updateCustomer(@PathVariable Long id,@Valid @RequestBody CustomerUpdateRequest request) {
+        System.out.println("CustomerController.updateCustomer()");
+        return customerService.updateCustomer(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public String deleteUser(@PathVariable Long id) {
-        System.out.println("CustomerController.deleteUser()");
-        customerService.deleteUser(id);
+    public String deleteCustomer(@PathVariable Long id) {
+        System.out.println("CustomerController.deleteCustomer()");
+        customerService.deleteCustomer(id);
         return "Customer Deleted Successfully";
     }
 }
