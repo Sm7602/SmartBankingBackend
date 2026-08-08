@@ -30,7 +30,7 @@ public class CustomerService {
                  .dateOfBirth(customer.getDateOfBirth())
                  .createdAt(customer.getCreatedAt())
                  .updatedAt(customer.getUpdatedAt())
-                 .active(true)
+                 .active(customer.getActive())
                  .accounts(customer.getAccounts())
                  .beneficiaries(customer.getBeneficiaries())
                  .scheduledPayments(customer.getScheduledPayments())

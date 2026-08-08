@@ -36,9 +36,9 @@ public class BeneficiaryController {
         return beneficiaryService.getBeneficiaryById(id);
     }
 
-    @GetMapping("/user/{userId}")
+    @GetMapping("/customer/{customerId}")
     public List<BeneficiaryResponse> getBeneficiariesByCustomerId(@PathVariable Long customerId) {
-        System.out.println("BeneficiaryController.getBeneficiariesByUserId()");
+        System.out.println("BeneficiaryController.getBeneficiariesByCustomerId()");
         return beneficiaryService.getBeneficiariesByCustomerId(customerId);
     }
 
