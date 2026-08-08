@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.sbb.api.dao.AccountRepository;
 import com.sbb.api.dao.TransactionRepository;
+import com.sbb.api.dto.transaction.TransactionRequest;
+import com.sbb.api.dto.transaction.TransactionResponse;
+import com.sbb.api.dto.transaction.TransferRequest;
 import com.sbb.api.entity.Account;
 import com.sbb.api.entity.Transaction;
 
@@ -19,88 +22,145 @@ public class TransactionService {
 
     @Autowired
     private AccountRepository accountRepository;
+    
+    private TransactionResponse convertToResponse(Transaction transaction) {
 
-    public Transaction deposit(String accountNumber,BigDecimal amount,String remarks) {
+        return TransactionResponse.builder()
+                .id(transaction.getId())
+                .transactionReference(transaction.getTransactionReference())
+                .transactionType(transaction.getTransactionType())
+                .amount(transaction.getAmount())
+                .availableBalance(transaction.getAvailableBalance())
+                .remarks(transaction.getRemarks())
+                .status(transaction.getStatus())
+                .transactionTime(transaction.getTransactionTime())
+                .account(transaction.getAccount())
+                .build();
+    }
+
+    public TransactionResponse deposit(TransactionRequest request) {
         System.out.println("TransactionService.deposit()");
-        Account account = accountRepository.findByAccountNumber(accountNumber).orElseThrow(() ->
+        
+        Account account = accountRepository.findByAccountNumber(request.getAccountNumber()).orElseThrow(() ->
                         new RuntimeException("Account not found"));
+        
+        BigDecimal currentBalance = account.getBalance();
        
         if(!account.getActive()) {
             throw new RuntimeException("Account is inactive");
         }
         
-        if(amount.compareTo(BigDecimal.ZERO) <= 0) {
+        if(request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new RuntimeException("Invalid amount");
         }
 
-        account.setBalance(account.getBalance().add(amount));
+        BigDecimal newBalance =  currentBalance.add(request.getAmount());
+        account.setBalance(newBalance);
+       
         accountRepository.save(account);
 
-        Transaction transaction = new Transaction();
+        Transaction transaction =Transaction.builder()
+        		    .transactionReference(UUID.randomUUID().toString())
+                .transactionType(request.getTransactionType())
+                .amount(request.getAmount())
+                .availableBalance(newBalance)
+                .remarks(request.getRemarks())
+                .status("SUCCESS")
+                .transactionTime(LocalDateTime.now())
+                .account(account)
+                .build();
 
-        transaction.setTransactionReference(UUID.randomUUID().toString());
-        transaction.setTransactionType("DEPOSIT");
-        transaction.setAmount(amount);
-        transaction.setAvailableBalance(account.getBalance());
-        transaction.setRemarks(remarks);
-        transaction.setStatus("SUCCESS");
-        transaction.setTransactionTime(LocalDateTime.now());
-        transaction.setAccount(account);
-
-        return transactionRepository.save(transaction);
+        transaction= transactionRepository.save(transaction);
+        return convertToResponse(transaction);
     }
 
-    public Transaction withdraw(String accountNumber,BigDecimal amount,String remarks) {
+    public TransactionResponse withdraw(TransactionRequest request) {
         System.out.println("TransactionService.withdraw()");
-        Account account = accountRepository.findByAccountNumber(accountNumber).orElseThrow(() ->
+        Account account = accountRepository.findByAccountNumber(request.getAccountNumber()).orElseThrow(() ->
                         new RuntimeException("Account not found"));
+       
+        BigDecimal currentBalance = account.getBalance();
         
         if(!account.getActive()) {
             throw new RuntimeException("Account is inactive");
         }
         
-        if(amount.compareTo(BigDecimal.ZERO) <= 0) {
+        if(request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new RuntimeException("Invalid amount");
         }
         
-        if(account.getBalance().compareTo(amount) < 0) {
+        if(account.getBalance().compareTo(request.getAmount()) < 0) {
             throw new RuntimeException("Insufficient balance");
         }
         
-        if(amount.compareTo(account.getWithdrawalLimit()) > 0) {
-            throw new RuntimeException("Withdrawal limit exceeded");
+        BigDecimal dailyWithdraw = transactionRepository.getTodayWithdrawAmount(account.getId());
+
+        if (dailyWithdraw == null) {
+        	dailyWithdraw = BigDecimal.ZERO;
+        }
+
+        BigDecimal withdrawalLimit =account.getWithdrawalLimit();
+
+        if (withdrawalLimit != null &&
+        		dailyWithdraw.add(request.getAmount()).compareTo(withdrawalLimit) > 0) {
+
+            throw new RuntimeException("Daily transfer limit exceeded");
         }
         
-        BigDecimal remainingBalance =account.getBalance().subtract(amount);
+        
+        BigDecimal remainingBalance =currentBalance.subtract(request.getAmount());
 
         if(remainingBalance.compareTo(account.getMinimumBalance()) < 0) {
             throw new RuntimeException("Minimum balance must be maintained");
         }
         
 
-        account.setBalance(account.getBalance().subtract(amount));
+        BigDecimal newBalance =  currentBalance.subtract(request.getAmount());
         accountRepository.save(account);
         
-        Transaction transaction = new Transaction();
-        transaction.setTransactionReference(UUID.randomUUID().toString());
-        transaction.setTransactionType("WITHDRAW");
-        transaction.setAmount(amount);
-        transaction.setAvailableBalance(account.getBalance());
-        transaction.setRemarks(remarks);
-        transaction.setStatus("SUCCESS");
-        transaction.setTransactionTime(LocalDateTime.now());
-        transaction.setAccount(account);
+        Transaction transaction =Transaction.builder()
+    		    .transactionReference(UUID.randomUUID().toString())
+            .transactionType(request.getTransactionType())
+            .amount(request.getAmount())
+            .availableBalance(newBalance)
+            .remarks(request.getRemarks())
+            .status("SUCCESS")
+            .transactionTime(LocalDateTime.now())
+            .account(account)
+            .build();
 
-        return transactionRepository.save(transaction);
+    transaction= transactionRepository.save(transaction);
+    return convertToResponse(transaction);
+        
     }
     
-    public Transaction transfer(String fromAccountNumber, String toAccountNumber,BigDecimal amount,String remarks) {
+    public TransactionResponse transfer(TransferRequest request) {
         System.out.println("TransactionService.transfer()");
-        Account sender = accountRepository.findByAccountNumber(fromAccountNumber) .orElseThrow(() ->
+        Account sender = accountRepository.findByAccountNumber(request.getFromAccountNumber()) .orElseThrow(() ->
                         new RuntimeException("Sender account not found"));
 
-        Account receiver = accountRepository.findByAccountNumber(toAccountNumber).orElseThrow(() ->
+        Account receiver = accountRepository.findByAccountNumber(request.getToAccountNumber()).orElseThrow(() ->
                         new RuntimeException("Receiver account not found"));
+        
+        if (request.getFromAccountNumber() == null ||
+                request.getFromAccountNumber().isBlank()) {
+
+            throw new IllegalArgumentException("Sender account number is required");
+        }
+
+        if (request.getToAccountNumber() == null ||
+                request.getToAccountNumber().isBlank()) {
+
+            throw new IllegalArgumentException(
+                    "Receiver account number is required");
+        }
+
+        if (request.getAmount() == null ||
+                request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+
+            throw new IllegalArgumentException(
+                    "Transfer amount must be greater than zero");
+        }
 
         if(!sender.getActive()) {
             throw new RuntimeException("Sender account inactive");
@@ -110,64 +170,85 @@ public class TransactionService {
             throw new RuntimeException("Receiver account inactive");
         }
         
-        if(fromAccountNumber.equals(toAccountNumber)) {
+        if(request.getFromAccountNumber().equals(request.getToAccountNumber())) {
             throw new RuntimeException("Cannot transfer to same account");
         }
         
-        if(sender.getBalance().compareTo(amount) < 0) {
+        if(sender.getBalance().compareTo(request.getAmount()) < 0) {
             throw new RuntimeException("Insufficient balance");
         }
         
-        if(amount.compareTo(sender.getDailyTransferLimit()) > 0) {
-            throw new RuntimeException("Transfer limit exceeded");
+        BigDecimal dailyTransferred = transactionRepository.getTodayTransferAmount(sender.getId());
+
+        if (dailyTransferred == null) {
+            dailyTransferred = BigDecimal.ZERO;
+        }
+
+        BigDecimal dailyLimit =sender.getDailyTransferLimit();
+
+        if (dailyLimit != null &&
+                dailyTransferred.add(request.getAmount()).compareTo(dailyLimit) > 0) {
+
+            throw new RuntimeException("Daily transfer limit exceeded");
         }
         
-        BigDecimal remainingBalance =sender.getBalance().subtract(amount);
+        BigDecimal remainingBalance =sender.getBalance().subtract(request.getAmount());
 
         if(remainingBalance.compareTo(sender.getMinimumBalance()) < 0) {
             throw new RuntimeException("Minimum balance must be maintained");
         }
 
-        sender.setBalance(sender.getBalance().subtract(amount));
+        sender.setBalance(sender.getBalance().subtract(request.getAmount()));
 
-        receiver.setBalance(receiver.getBalance().add(amount));
+        receiver.setBalance(receiver.getBalance().add(request.getAmount()));
 
         accountRepository.save(sender);
         accountRepository.save(receiver);
+        
+        Transaction transaction =Transaction.builder()
+    		    .transactionReference(UUID.randomUUID().toString())
+            .transactionType(request.getTransactionType())
+            .amount(request.getAmount())
+            .availableBalance(sender.getBalance())
+            .remarks(request.getRemarks())
+            .status("SUCCESS")
+            .transactionTime(LocalDateTime.now())
+            .account(sender)
+            .build();
 
-        Transaction transaction = new Transaction();
+    transaction= transactionRepository.save(transaction);
+    return convertToResponse(transaction);
 
-        transaction.setTransactionReference(UUID.randomUUID().toString());
-        transaction.setTransactionType("TRANSFER");
-        transaction.setAmount(amount);
-        transaction.setAvailableBalance(sender.getBalance());
-        transaction.setRemarks(remarks);
-        transaction.setStatus("SUCCESS");
-        transaction.setTransactionTime(LocalDateTime.now());
-        transaction.setAccount(sender);
-
-        return transactionRepository.save(transaction);
     }
 
-    public Transaction getTransactionById(Long id) {
+    public TransactionResponse getTransactionById(Long id) {
         System.out.println("TransactionService.getTransactionById()");
-        return transactionRepository.findById(id).orElseThrow(() ->
+        Transaction transaction= transactionRepository.findById(id).orElseThrow(() ->
                         new RuntimeException("Transaction not found"));
+        return convertToResponse(transaction);
     }
 
-    public List<Transaction> getAllTransactions() {
+    public List<TransactionResponse> getAllTransactions() {
         System.out.println("TransactionService.getAllTransactions()");
-        return transactionRepository.findAll();
+        return transactionRepository.findAll()
+        		    .stream()
+	            .map(this::convertToResponse)
+	            .toList();
     }
 
-    public List<Transaction> getTransactionsByAccount(String accountNumber) {
+    public List<TransactionResponse> getTransactionsByAccount(String accountNumber) {
         System.out.println("TransactionService.getTransactionsByAccount()");
-        return transactionRepository.findByAccountAccountNumber(accountNumber);
+        return transactionRepository.findByAccountAccountNumber(accountNumber)
+        		    .stream()
+	            .map(this::convertToResponse)
+	            .toList();
     }
 
     public void deleteTransaction(Long id) {
         System.out.println("TransactionService.deleteTransaction()");
-        Transaction transaction =getTransactionById(id);
+        Transaction transaction= transactionRepository.findById(id).orElseThrow(() ->
+        new RuntimeException("Transaction not found"));
+        
         transactionRepository.delete(transaction);
     }
 }
